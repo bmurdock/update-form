@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Edit Form Thingy</title>
+</head>
+
+<body>
+    <h1>Form To Add Products</h1>
+    <form id="products">
+        <input name="name" placeholder="Name">
+        <input name="description" placeholder="Description.....">
+        <input name="price" placeholder="0.0">
+        <select id="productProviderSelect" name="productProvider">
+            <option>Choose Product Provider</option>
+        </select>
+        <input type="submit" value="Submit">
+    </form>
+    <div id="formFeedback"></div>
+
+
+    <script type="text/javascript">
+        const mySelect = document.getElementById('productProviderSelect');
+        const myForm = document.getElementById('products');
+        const feedback = document.getElementById('formFeedback');
+
+
+        const productProviderRoute = 'http://lvh.me:3444/product-providers/';
+        const options = {
+            mode: 'cors'
+        };
+        fetch(productProviderRoute, options)
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                data.forEach(function (provider) {
+                    const option = document.createElement('option');
+                    option.setAttribute('value', provider._id);
+                    option.textContent = provider.name;
+                    mySelect.append(option);
+                });
+            })
+            .catch(function (error) {
+                console.error('Oops: ', error);
+            });
+
+
+        myForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+
+            const inputs = myForm.querySelectorAll('[name]');
+            const requestBody = {};
+            const createRoute = "http://lvh.me:3444/products/";
+
+            inputs.forEach(function (input) {
+                requestBody[input.getAttribute('name')] = input.value;
+            });
+
+            console.log('requestBody: ', requestBody);
+            const fetchOptions = {
+                body: JSON.stringify(requestBody),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST',
+                mode: 'cors'
+            };
+            fetch(createRoute, fetchOptions)
+                .then(function (response) {
+                    return response.text();
+                })
+                .then(function (text) {
+                    console.log('text: ', text);
+                    feedback.textContent = text;
+                    myForm.reset();
+                })
+                .catch(function (err) {
+                    console.error("Something bad happened: ", err);
+                });
+
+        });
+    </script>
+
+
+</body>
+
+</html>
